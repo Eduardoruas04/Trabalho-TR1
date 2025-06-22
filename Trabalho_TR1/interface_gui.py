@@ -1,6 +1,7 @@
 import gi
 import numpy as np
 from Camada_fisica import *
+from Camada_enlace import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 
@@ -10,7 +11,7 @@ from gi.repository import Gtk
 
 class InterfaceModulador(Gtk.Window):
     def __init__(self):
-        super().__init__(title="Simulador de Camada Física")
+        super().__init__(title="Simulador de Comunicação")
         self.set_default_size(800, 600)
 
         # Layout principal
@@ -21,12 +22,28 @@ class InterfaceModulador(Gtk.Window):
         box.set_margin_end(10)
         self.add(box)
 
-        # Entrada de bits
+        # Entrada de texto
         self.entry = Gtk.Entry()
-        self.entry.set_placeholder_text("Digite os bits (ex: 1011001)")
+        self.entry.set_placeholder_text("Digite a mensagem a ser transmitida")
         box.pack_start(self.entry, False, False, 0)
 
-        # ComboBox para seleção de modulação
+        # ComboBox para tipo de enquadramento
+        self.enq_combo = Gtk.ComboBoxText()
+        self.enq_combo.append_text("Contagem")
+        self.enq_combo.append_text("Byte Stuffing")
+        self.enq_combo.append_text("Bit Stuffing")
+        self.enq_combo.set_active(0)
+        box.pack_start(self.enq_combo, False, False, 0)
+
+        # ComboBox para detecção de erros
+        self.err_combo = Gtk.ComboBoxText()
+        self.err_combo.append_text("Paridade Par")
+        self.err_combo.append_text("CRC-32")
+        self.err_combo.append_text("Hamming")
+        self.err_combo.set_active(0)
+        box.pack_start(self.err_combo, False, False, 0)
+
+        # ComboBox para tipo de modulação
         self.combo = Gtk.ComboBoxText()
         self.combo.append_text("NRZ-Polar")
         self.combo.append_text("Manchester")
@@ -37,9 +54,9 @@ class InterfaceModulador(Gtk.Window):
         self.combo.set_active(0)
         box.pack_start(self.combo, False, False, 0)
 
-        # Botão
-        botao = Gtk.Button(label="Executar Modulação")
-        botao.connect("clicked", self.executar_modulacao)
+        # Botão de execução
+        botao = Gtk.Button(label="Executar Simulação")
+        botao.connect("clicked", self.executar_simulacao)
         box.pack_start(botao, False, False, 0)
 
         # Área do gráfico
@@ -47,18 +64,39 @@ class InterfaceModulador(Gtk.Window):
         self.canvas = FigureCanvas(self.figure)
         box.pack_start(self.canvas, True, True, 0)
 
-    def executar_modulacao(self, button):
-        texto_bits = self.entry.get_text().strip()
-        if not all(c in '01' for c in texto_bits):
+    def executar_simulacao(self, button):
+        mensagem = self.entry.get_text().strip()
+        if not mensagem:
             self.ax.clear()
-            self.ax.set_title("Erro: Entrada inválida")
+            self.ax.set_title("Erro: mensagem vazia")
             self.canvas.draw()
             return
 
-        bits = [int(b) for b in texto_bits]
-        tipo = self.combo.get_active_text()
+        dados = mensagem.encode("utf-8")
 
-        # Seleciona modulação
+        # ENQUADRAMENTO
+        enq_tipo = self.enq_combo.get_active_text()
+        if enq_tipo == "Contagem":
+            quadro = enquadramento_contagem(dados)
+        elif enq_tipo == "Byte Stuffing":
+            quadro = enquadramento_byte_stuffing(dados)
+        else:
+            quadro = enquadramento_bit_stuffing(dados)
+
+        # DETECÇÃO OU CORREÇÃO DE ERRO
+        err_tipo = self.err_combo.get_active_text()
+        if err_tipo == "Paridade Par":
+            quadro = aplicar_paridade_par(quadro)
+        elif err_tipo == "CRC-32":
+            quadro = aplicar_crc32(quadro)
+        else:
+            quadro = aplicar_hamming(quadro)
+
+        # CONVERSÃO EM BITS PARA MODULAÇÃO
+        bits = [int(b) for byte in quadro for b in f"{byte:08b}"]
+
+        # MODULAÇÃO
+        mod_tipo = self.combo.get_active_text()
         mod_func = {
             "NRZ-Polar": nrz_polar,
             "Manchester": manchester,
@@ -66,14 +104,15 @@ class InterfaceModulador(Gtk.Window):
             "ASK": ask_modulation,
             "FSK": fsk_modulation,
             "8-QAM": qam8_modulation
-        }[tipo]
+        }[mod_tipo]
 
         t, s = mod_func(bits)
 
+        # PLOTAR
         self.ax.clear()
-        estilo = 'steps-post' if tipo in ["NRZ-Polar", "Manchester", "Bipolar"] else 'default'
+        estilo = 'steps-post' if mod_tipo in ["NRZ-Polar", "Manchester", "Bipolar"] else 'default'
         self.ax.plot(t, s, drawstyle=estilo)
-        self.ax.set_title(f"Modulação {tipo}")
+        self.ax.set_title(f"{mod_tipo} após {enq_tipo} + {err_tipo}")
         self.ax.set_xlabel("Tempo")
         self.ax.set_ylabel("Amplitude")
         self.ax.grid(True)
