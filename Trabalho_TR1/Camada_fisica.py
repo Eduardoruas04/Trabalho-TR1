@@ -1,14 +1,13 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
 # === MODULAÇÕES BANDA BASE ===
 
 def nrz_polar(bits, bit_duration=1, samples_per_bit=100):
     """
-    Gera forma de onda NRZ-POLAR a partir de uma lista de bits.
+    Modulação NRZ-Polar: 1 -> +1, 0 -> -1 (nível constante).
     """
-    t = []
-    signal = []
+    t, signal = [], []
     for bit in bits:
         value = 1 if bit == 1 else -1
         for _ in range(samples_per_bit):
@@ -19,10 +18,9 @@ def nrz_polar(bits, bit_duration=1, samples_per_bit=100):
 
 def manchester(bits, bit_duration=1, samples_per_bit=100):
     """
-    Gera a forma de onda Manchester a partir de uma lista de bits.
+    Modulação Manchester: 0 -> +1/-1, 1 -> -1/+1 (transição no meio do bit).
     """
-    t = []
-    signal = []
+    t, signal = [], []
     for bit in bits:
         first = 1 if bit == 0 else -1
         second = -first
@@ -37,26 +35,26 @@ def manchester(bits, bit_duration=1, samples_per_bit=100):
 
 def bipolar(bits, bit_duration=1, samples_per_bit=100):
     """
-    Gera a forma de onda Bipolar a partir de uma lista de bits.
+    Modulação Bipolar: 0 -> 0, 1 alterna entre +1 e -1.
     """
-    t = []
-    signal = []
+    t, signal = [], []
     last = -1
     for bit in bits:
-        value = 0 if bit == 0 else -1 * last
-        if bit == 1:
+        if bit == 0:
+            value = 0
+        else:
             last *= -1
+            value = last
         for _ in range(samples_per_bit):
             t.append(len(signal) * bit_duration / samples_per_bit)
             signal.append(value)
     return np.array(t), np.array(signal)
 
-
 # === MODULAÇÕES POR PORTADORA ===
 
 def ask_modulation(bits, bit_duration=1, samples_per_bit=100, freq=5):
     """
-    Gera modulação ASK (Amplitude Shift Keying).
+    Modulação ASK (Amplitude Shift Keying): bit 1 → A=1, bit 0 → A=0.3.
     """
     total_samples = len(bits) * samples_per_bit
     t = np.linspace(0, bit_duration * len(bits), total_samples)
@@ -71,7 +69,7 @@ def ask_modulation(bits, bit_duration=1, samples_per_bit=100, freq=5):
 
 def fsk_modulation(bits, bit_duration=1, samples_per_bit=100, f0=5, f1=10):
     """
-    Gera modulação FSK (Frequency Shift Keying).
+    Modulação FSK (Frequency Shift Keying): bit 0 → f0, bit 1 → f1.
     """
     total_samples = len(bits) * samples_per_bit
     t = np.linspace(0, bit_duration * len(bits), total_samples)
@@ -86,13 +84,15 @@ def fsk_modulation(bits, bit_duration=1, samples_per_bit=100, f0=5, f1=10):
 
 def qam8_modulation(bits, bit_duration=1, samples_per_bit=100, carrier_freq=5):
     """
-    Gera modulação 8-QAM (Quadrature Amplitude Modulation).
+    Modulação 8-QAM: combina fase e amplitude (3 bits por símbolo).
     """
+    # Agrupar os bits em trios (1 símbolo = 3 bits)
     symbols = [bits[i:i+3] for i in range(0, len(bits), 3)]
     total_samples = samples_per_bit * len(symbols)
     t = np.linspace(0, bit_duration * len(symbols), total_samples)
     signal = []
 
+    # Mapeamento de bits para valores I/Q
     mapping = {
         (0,0,0): (1, 1),  (0,0,1): (1, -1),
         (0,1,0): (-1, 1), (0,1,1): (-1, -1),
@@ -100,23 +100,23 @@ def qam8_modulation(bits, bit_duration=1, samples_per_bit=100, carrier_freq=5):
         (1,1,0): (-3, 1), (1,1,1): (-3, -1),
     }
 
-    for i, bits_triplet in enumerate(symbols):
-        while len(bits_triplet) < 3:
-            bits_triplet.append(0)
-        I, Q = mapping[tuple(bits_triplet)]
+    for i, triplet in enumerate(symbols):
+        while len(triplet) < 3:
+            triplet.append(0)
+        I, Q = mapping[tuple(triplet)]
         symbol_t = t[i*samples_per_bit:(i+1)*samples_per_bit]
         carrier = 2 * np.pi * carrier_freq * symbol_t
         segment = I * np.cos(carrier) + Q * np.sin(carrier)
         signal.extend(segment)
+
     return t, np.array(signal)
 
-
-# === TESTE AUTOMÁTICO LOCAL ===
+# === TESTE LOCAL ===
 
 if __name__ == "__main__":
     bits = [1, 0, 1, 1, 0, 0, 1]
 
-    modulations = [
+    modulações = [
         ("NRZ-Polar", nrz_polar),
         ("Manchester", manchester),
         ("Bipolar", bipolar),
@@ -125,14 +125,14 @@ if __name__ == "__main__":
         ("8-QAM", qam8_modulation)
     ]
 
-    for title, func in modulations:
-        t, s = func(bits)
+    for nome, funcao in modulações:
+        t, s = funcao(bits)
+        estilo = 'steps-post' if nome in ['NRZ-Polar', 'Manchester', 'Bipolar'] else 'default'
         plt.figure(figsize=(10, 2))
-        estilo = 'steps-post' if "NRZ" in title or "Manchester" in title or "Bipolar" in title else 'default'
         plt.plot(t, s, drawstyle=estilo)
-        plt.title(f"Modulação {title}")
+        plt.title(f"Modulação {nome}")
         plt.xlabel("Tempo")
         plt.ylabel("Amplitude")
         plt.grid(True)
         plt.tight_layout()
-        plt.show()
+        plt.savefig(f"modulacao_{nome}.png")
