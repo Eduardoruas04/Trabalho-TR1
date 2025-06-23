@@ -27,6 +27,9 @@ class InterfaceModulador(Gtk.Window):
         self.entry.set_placeholder_text("Digite a mensagem a ser transmitida")
         box.pack_start(self.entry, False, False, 0)
 
+        # Labels de separação
+        box.pack_start(Gtk.Label(label="--- TRANSMISSOR ---"), False, False, 5)
+
         # ComboBox para tipo de modulação
         self.combo = Gtk.ComboBoxText()
         self.combo.append_text("NRZ-Polar")
@@ -59,10 +62,16 @@ class InterfaceModulador(Gtk.Window):
         botao.connect("clicked", self.executar_simulacao)
         box.pack_start(botao, False, False, 0)
 
-        # Área do gráfico
+        # Área do gráfico com label
+        box.pack_start(Gtk.Label(label="Sinal gerado pelo Transmissor"), False, False, 5)
         self.figure, self.ax = plt.subplots(figsize=(8, 3))
         self.canvas = FigureCanvas(self.figure)
         box.pack_start(self.canvas, True, True, 0)
+
+        # Label de recepção
+        box.pack_start(Gtk.Label(label="--- RECEPTOR ---"), False, False, 5)
+        self.rx_label = Gtk.Label(label="Mensagem recebida: ")
+        box.pack_start(self.rx_label, False, False, 5)
 
     def executar_simulacao(self, button):
         mensagem = self.entry.get_text().strip()
@@ -122,8 +131,13 @@ class InterfaceModulador(Gtk.Window):
         self.canvas.draw()
 
         # EXIBIR MENSAGEM DECODIFICADA (simulação de recepção)
+        print("\n===== TRANSMISSOR =====")
         print("Mensagem transmitida:", mensagem)
+        print("Bits transmitidos:", bits)
+
+        print("\n===== RECEPTOR =====")
         print("Mensagem recebida:", quadro_rx.decode("utf-8", errors='ignore'))
+        self.rx_label.set_text("Mensagem recebida: " + quadro_rx.decode("utf-8", errors='ignore'))
 
 if __name__ == '__main__':
     win = InterfaceModulador()
