@@ -110,29 +110,3 @@ def qam8_modulation(bits, bit_duration=1, samples_per_bit=100, carrier_freq=5):
         signal.extend(segment)
 
     return t, np.array(signal)
-
-# === TESTE LOCAL ===
-
-if __name__ == "__main__":
-    bits = [1, 0, 1, 1, 0, 0, 1]
-
-    modulações = [
-        ("NRZ-Polar", nrz_polar),
-        ("Manchester", manchester),
-        ("Bipolar", bipolar),
-        ("ASK", ask_modulation),
-        ("FSK", fsk_modulation),
-        ("8-QAM", qam8_modulation)
-    ]
-
-    for nome, funcao in modulações:
-        t, s = funcao(bits)
-        estilo = 'steps-post' if nome in ['NRZ-Polar', 'Manchester', 'Bipolar'] else 'default'
-        plt.figure(figsize=(10, 2))
-        plt.plot(t, s, drawstyle=estilo)
-        plt.title(f"Modulação {nome}")
-        plt.xlabel("Tempo")
-        plt.ylabel("Amplitude")
-        plt.grid(True)
-        plt.tight_layout()
-        plt.savefig(f"modulacao_{nome}.png")

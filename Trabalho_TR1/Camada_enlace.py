@@ -90,30 +90,4 @@ def aplicar_hamming(dados: bytes) -> bytes:
     # Simples placeholder
     return dados + b'H'
 
-# === TESTE LOCAL ===
-if __name__ == "__main__":
-    msg = b"Teste"
 
-    print("Contagem:")
-    q = enquadramento_contagem(msg)
-    print(q)
-    print(desenquadramento_contagem(q))
-
-    print("Byte Stuffing:")
-    q = enquadramento_byte_stuffing(msg)
-    print(q)
-    print(desenquadramento_byte_stuffing(q))
-
-    print("Bit Stuffing:")
-    q = enquadramento_bit_stuffing(msg)
-    print(q)
-    print(desenquadramento_bit_stuffing(q))
-
-    print("Paridade:")
-    print(aplicar_paridade_par(msg))
-
-    print("CRC:")
-    print(aplicar_crc32(msg))
-
-    print("Hamming:")
-    print(aplicar_hamming(msg))
