@@ -4,7 +4,7 @@
 
 ## Objetivo
 
-> Desenvolver um simulador educativo e interativo que implemente:
+### Desenvolver um simulador que implemente:
 
 > Protocolos de enquadramento e detecção/correção de erros da camada de enlace;
 
@@ -58,7 +58,7 @@ A interface construída com GTK 3 permite:
 
     1.Entrada da mensagem a ser transmitida;
 
-    2.Escolha do tipo de enquadramento, detecção/correção de erros e modulação;
+    2.Escolha do tipo de modulação, enquadramento e detecção/correção de erros;
 
     3.Visualização do sinal resultante no gráfico.
 
@@ -66,7 +66,9 @@ A interface construída com GTK 3 permite:
 ## Estrutura dos Arquivos
 
 Camada_fisica.py: Funções de modulação da camada física
+
 Camada_enlace.py: Funções de enquadramento e controle de erro
+
 interface_gui.py: Interface gráfica GTK para simulação
 
 
