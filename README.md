@@ -72,7 +72,9 @@ interface_gui.py: Interface gráfica GTK para simulação
 
 ## Execução
 
-Para executar a interface gráfica: python3 interface_gui.py
+Para executar a interface gráfica: 
+
+    python3 interface_gui.py
 
 ## Tecnologias Utilizadas
 
