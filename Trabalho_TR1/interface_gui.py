@@ -27,6 +27,17 @@ class InterfaceModulador(Gtk.Window):
         self.entry.set_placeholder_text("Digite a mensagem a ser transmitida")
         box.pack_start(self.entry, False, False, 0)
 
+        # ComboBox para tipo de modulação
+        self.combo = Gtk.ComboBoxText()
+        self.combo.append_text("NRZ-Polar")
+        self.combo.append_text("Manchester")
+        self.combo.append_text("Bipolar")
+        self.combo.append_text("ASK")
+        self.combo.append_text("FSK")
+        self.combo.append_text("8-QAM")
+        self.combo.set_active(0)
+        box.pack_start(self.combo, False, False, 0)
+
         # ComboBox para tipo de enquadramento
         self.enq_combo = Gtk.ComboBoxText()
         self.enq_combo.append_text("Contagem")
@@ -42,17 +53,6 @@ class InterfaceModulador(Gtk.Window):
         self.err_combo.append_text("Hamming")
         self.err_combo.set_active(0)
         box.pack_start(self.err_combo, False, False, 0)
-
-        # ComboBox para tipo de modulação
-        self.combo = Gtk.ComboBoxText()
-        self.combo.append_text("NRZ-Polar")
-        self.combo.append_text("Manchester")
-        self.combo.append_text("Bipolar")
-        self.combo.append_text("ASK")
-        self.combo.append_text("FSK")
-        self.combo.append_text("8-QAM")
-        self.combo.set_active(0)
-        box.pack_start(self.combo, False, False, 0)
 
         # Botão de execução
         botao = Gtk.Button(label="Executar Simulação")
@@ -78,12 +78,15 @@ class InterfaceModulador(Gtk.Window):
         enq_tipo = self.enq_combo.get_active_text()
         if enq_tipo == "Contagem":
             quadro = enquadramento_contagem(dados)
+            quadro_rx = desenquadramento_contagem(quadro)
         elif enq_tipo == "Byte Stuffing":
             quadro = enquadramento_byte_stuffing(dados)
+            quadro_rx = desenquadramento_byte_stuffing(quadro)
         else:
             quadro = enquadramento_bit_stuffing(dados)
+            quadro_rx = desenquadramento_bit_stuffing(quadro)
 
-        # DETECÇÃO OU CORREÇÃO DE ERRO
+        # DETECÇÃO OU CORREÇÃO DE ERRO (transmissor)
         err_tipo = self.err_combo.get_active_text()
         if err_tipo == "Paridade Par":
             quadro = aplicar_paridade_par(quadro)
@@ -112,11 +115,15 @@ class InterfaceModulador(Gtk.Window):
         self.ax.clear()
         estilo = 'steps-post' if mod_tipo in ["NRZ-Polar", "Manchester", "Bipolar"] else 'default'
         self.ax.plot(t, s, drawstyle=estilo)
-        self.ax.set_title(f"{mod_tipo} após {enq_tipo} + {err_tipo}")
+        self.ax.set_title(f"Transmissor: {mod_tipo} após {enq_tipo} + {err_tipo}")
         self.ax.set_xlabel("Tempo")
         self.ax.set_ylabel("Amplitude")
         self.ax.grid(True)
         self.canvas.draw()
+
+        # EXIBIR MENSAGEM DECODIFICADA (simulação de recepção)
+        print("Mensagem transmitida:", mensagem)
+        print("Mensagem recebida:", quadro_rx.decode("utf-8", errors='ignore'))
 
 if __name__ == '__main__':
     win = InterfaceModulador()
