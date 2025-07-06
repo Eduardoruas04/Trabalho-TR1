@@ -118,7 +118,7 @@ class InterfaceModulador(Gtk.Window):
         # Simulação de ruído
         if self.check_ruido.get_active():
             quadro_tx = introduzir_erro(quadro_tx, n_erros=1)
-            print("⚠️ Simulação de erro no canal: 1 bit invertido.")
+            print("Simulação de erro no canal: 1 bit invertido.")
 
         bits = [int(b) for byte in quadro_tx for b in f"{byte:08b}"]
 
