@@ -71,12 +71,14 @@ Camada_enlace.py: Funções de enquadramento e controle de erro
 
 interface_gui.py: Interface gráfica GTK para simulação
 
+Simulador.py: Compila o projeto
+
 
 ## Execução
 
 Para executar a interface gráfica: 
 
-    python3 interface_gui.py
+    python3 Simulador.py
 
 ## Tecnologias Utilizadas
 
