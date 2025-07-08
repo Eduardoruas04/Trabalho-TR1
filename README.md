@@ -71,6 +71,8 @@ Camada_enlace.py: Funções de enquadramento e controle de erro
 
 interface_gui.py: Interface gráfica GTK para simulação
 
+receptor_socket.py: Ponto final de uma via de comunicação de rede bidirecional
+
 Simulador.py: Compila o projeto
 
 
@@ -79,6 +81,10 @@ Simulador.py: Compila o projeto
 Para executar a interface gráfica: 
 
     python3 Simulador.py
+
+Para executar o Socket:
+
+    python3 receptor_socket.py
 
 ## Tecnologias Utilizadas
 
