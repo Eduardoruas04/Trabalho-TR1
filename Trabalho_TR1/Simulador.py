@@ -1,8 +1,9 @@
-from interface_gui import InterfaceModulador
+
+from interface_gui import InterfaceTransmissor
 from gi.repository import Gtk
 
 if __name__ == '__main__':
-    app = InterfaceModulador()
+    app = InterfaceTransmissor()
     app.connect("destroy", Gtk.main_quit)
     app.show_all()
     Gtk.main()
